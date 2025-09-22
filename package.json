@@ -1,6 +1,6 @@
 {
-	"name": "oz-calendar",
-	"version": "0.3.4",
+	"name": "oz-calendar-diegorv-fork",
+	"version": "0.3.5",
 	"description": "View your notes in Calendar using any YAML key with date",
 	"main": "main.js",
 	"scripts": {
@@ -20,7 +20,7 @@
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
+		"esbuild": "^0.25.10",
 		"obsidian": "latest",
 		"prettier": "^2.8.4",
 		"tslib": "2.4.0",
