@@ -6,7 +6,7 @@ export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' 
 export type SortingOption = 'name' | 'name-rev';
 export type DateSourceOption = 'filename' | 'yaml';
 export type NewNoteDateType = 'current-date' | 'active-date';
-export type CalendarType = 'US' | 'ISO 8601';
+export type CalendarType = 'gregory' | 'iso8601';
 export type OverflowBehaviour = 'scroll' | 'hide' | 'next-line';
 
 export interface OZCalendarPluginSettings {
@@ -30,7 +30,7 @@ export interface OZCalendarPluginSettings {
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	openViewOnStart: true,
-	calendarType: 'ISO 8601',
+	calendarType: 'iso8601',
 	dateSource: 'yaml',
 	yamlKey: 'created',
 	dateFormat: 'YYYY-MM-DD hh:mm:ss',
@@ -106,8 +106,8 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 			)
 			.addDropdown((dropdown) => {
 				dropdown
-					.addOption('ISO 8601', 'ISO 8601')
-					.addOption('US', 'US')
+					.addOption('iso8601', 'ISO 8601')
+					.addOption('gregory', 'US')
 					.setValue(this.plugin.settings.calendarType)
 					.onChange((newValue: CalendarType) => {
 						this.plugin.settings.calendarType = newValue;

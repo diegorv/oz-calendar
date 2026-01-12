@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Calendar, { CalendarTileProperties } from 'react-calendar';
+import Calendar, { TileArgs } from 'react-calendar';
 import { RxDotFilled } from 'react-icons/rx';
 import OZCalendarPlugin from '../main';
 import NoteListComponent from './noteList';
@@ -69,7 +69,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		setSelectedDay(newDate.toDate());
 	};
 
-	const customTileContent = ({ date, view }: CalendarTileProperties) => {
+	const customTileContent = ({ date, view }: TileArgs) => {
 		if (view === 'month') {
 			const dateString = dayjs(date).format('YYYY-MM-DD');
 			let dotsCount =
@@ -86,7 +86,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 		return null;
 	};
 
-	const customTileClass = ({ activeStartDate, date, view }: CalendarTileProperties) => {
+	const customTileClass = ({ date }: TileArgs) => {
 		// Assign a custom class in case the day is the current day
 		let today = new Date();
 		return date.getFullYear() === today.getFullYear() &&
@@ -101,7 +101,13 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 	return (
 		<div className={'oz-calendar-plugin-view ' + fixedCalendarClass}>
 			<Calendar
-				onChange={setSelectedDay}
+				onChange={(value) => {
+					if (value instanceof Date) {
+						setSelectedDay(value);
+					} else if (Array.isArray(value) && value[0] instanceof Date) {
+						setSelectedDay(value[0]);
+					}
+				}}
 				value={selectedDay}
 				maxDetail="month"
 				minDetail="month"
@@ -123,7 +129,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 						setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
 					}
 				}}
-				formatMonthYear={(locale, date) => dayjs(date).format('MMM YYYY')}
+				formatMonthYear={(_locale, date) => dayjs(date).format('MMM YYYY')}
 			/>
 			<>
 				<div id="oz-calendar-divider"></div>
