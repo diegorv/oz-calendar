@@ -140,6 +140,42 @@ settings:
 	font-size: 1.3em;
 }
 
+.oz-calendar-plugin-view .oz-calendar-nav-label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 1.2;
+}
+
+.oz-calendar-plugin-view .oz-calendar-quarter {
+	font-size: 0.75em;
+	color: var(--oz-calendar-header-date-color);
+	opacity: 0.7;
+	cursor: pointer;
+}
+
+.oz-calendar-plugin-view .oz-calendar-month-year {
+	color: var(--oz-calendar-header-date-color);
+	cursor: pointer;
+}
+
+.oz-calendar-plugin-view .oz-calendar-month-year:hover,
+.oz-calendar-plugin-view .oz-calendar-quarter:hover {
+	color: var(--oz-calendar-header-date-color);
+	opacity: 0.5;
+}
+
+/* Allow clicking on month label even when disabled (for monthly note creation) */
+.oz-calendar-plugin-view button.react-calendar__navigation__label:disabled {
+	pointer-events: auto;
+	cursor: pointer;
+}
+
+.oz-calendar-plugin-view button.react-calendar__navigation__label:disabled .react-calendar__navigation__label__labelText {
+	pointer-events: auto;
+	cursor: pointer;
+}
+
 .oz-calendar-plugin-view .dots-wrapper {
 	font-size: 8px;
 	display: flex;

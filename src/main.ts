@@ -1,17 +1,21 @@
-import { CachedMetadata, Menu, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
+import { CachedMetadata, Plugin, TAbstractFile, TFile, addIcon } from 'obsidian';
 import { OZCalendarView, VIEW_TYPE } from 'view';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { DayChangeCommandAction, OZCalendarDaysMap, fileToOZItem } from 'types';
 import { OZCAL_ICON } from './util/icons';
 import { OZCalendarPluginSettings, DEFAULT_SETTINGS, OZCalendarPluginSettingsTab } from './settings/settings';
-import { CreateNoteModal } from 'modal';
+import { CalendarNoteHandlers } from './noteHandlers';
 
 export default class OZCalendarPlugin extends Plugin {
 	settings: OZCalendarPluginSettings;
 	dayjs = dayjs;
 	OZCALENDARDAYS_STATE: OZCalendarDaysMap = {};
 	initialScanCompleted: boolean = false;
+	private noteHandlers: CalendarNoteHandlers;
 	EVENT_TYPES = {
 		forceUpdate: 'ozCalendarForceUpdate',
 		changeDate: 'ozCalendarChangeDate',
@@ -19,11 +23,17 @@ export default class OZCalendarPlugin extends Plugin {
 	};
 
 	dayMonthSelectorQuery = '.oz-calendar-plugin-view .react-calendar__tile.react-calendar__month-view__days__day';
+	weekNumberSelectorQuery = '.oz-calendar-plugin-view .react-calendar__month-view__weekNumbers .react-calendar__tile';
+	monthLabelSelectorQuery = '.oz-calendar-plugin-view .oz-calendar-nav-action-middle';
+	monthNavLabelSelectorQuery = '.oz-calendar-plugin-view .react-calendar__navigation__label';
 
 	async onload() {
 		addIcon('OZCAL_ICON', OZCAL_ICON);
 
 		dayjs.extend(customParseFormat);
+		dayjs.extend(weekOfYear);
+		dayjs.extend(isoWeek);
+		dayjs.extend(advancedFormat);
 
 		// Load Settings
 		this.addSettingTab(new OZCalendarPluginSettingsTab(this.app, this));
@@ -54,8 +64,20 @@ export default class OZCalendarPlugin extends Plugin {
 		this.registerEvent(this.app.vault.on('delete', this.handleDelete));
 		this.registerEvent(this.app.vault.on('create', this.handleCreate));
 
+		// Initialize note handlers
+		this.noteHandlers = new CalendarNoteHandlers(this);
+
 		// Add Event Handler for Custom Note Creation
-		document.on('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
+		document.on('contextmenu', this.dayMonthSelectorQuery, this.noteHandlers.handleMonthDayContextMenu);
+
+		// Add Event Handler for Week Number Click
+		document.on('click', this.weekNumberSelectorQuery, this.noteHandlers.handleWeekNumberClick);
+
+		// Add Event Handler for Month Label Click
+		document.on('click', this.monthLabelSelectorQuery, this.noteHandlers.handleMonthLabelClick);
+
+		// Use mousedown with capture for disabled button (fires before disabled check)
+		document.addEventListener('mousedown', this.noteHandlers.handleMonthNavLabelClickCapture, true);
 
 		this.addCommand({
 			id: 'oz-calendar-next-day',
@@ -122,7 +144,12 @@ export default class OZCalendarPlugin extends Plugin {
 
 	onunload() {
 		// Remove Event Handler for Custom Note Creation
-		document.off('contextmenu', this.dayMonthSelectorQuery, this.handleMonthDayContextMenu);
+		document.off('contextmenu', this.dayMonthSelectorQuery, this.noteHandlers.handleMonthDayContextMenu);
+		// Remove Event Handler for Week Number Click
+		document.off('click', this.weekNumberSelectorQuery, this.noteHandlers.handleWeekNumberClick);
+		// Remove Event Handler for Month Label Click
+		document.off('click', this.monthLabelSelectorQuery, this.noteHandlers.handleMonthLabelClick);
+		document.removeEventListener('mousedown', this.noteHandlers.handleMonthNavLabelClickCapture, true);
 	}
 
 	async loadSettings() {
@@ -367,24 +394,4 @@ export default class OZCalendarPlugin extends Plugin {
 		return OZCalendarDays;
 	};
 
-	handleMonthDayContextMenu = (ev: MouseEvent, delegateTarget: HTMLElement) => {
-		let abbrItem = delegateTarget.querySelector('abbr[aria-label]');
-		if (abbrItem) {
-			let destDate = abbrItem.getAttr('aria-label');
-			if (destDate && destDate.length > 0) {
-				let dayjsDate = dayjs(destDate, 'MMMM D, YYYY');
-				let menu = new Menu();
-				menu.addItem((menuItem) => {
-					menuItem
-						.setTitle('Create a note for this date')
-						.setIcon('create-new')
-						.onClick((evt) => {
-							let modal = new CreateNoteModal(this, dayjsDate.toDate());
-							modal.open();
-						});
-				});
-				menu.showAtPosition({ x: ev.pageX, y: ev.pageY });
-			}
-		}
-	};
 }

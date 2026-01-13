@@ -110,7 +110,7 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 				}}
 				value={selectedDay}
 				maxDetail="month"
-				minDetail="month"
+				minDetail="year"
 				showWeekNumbers={plugin.settings.showWeekNumbers}
 				view="month"
 				tileContent={customTileContent}
@@ -129,7 +129,12 @@ export default function MyCalendar(params: { plugin: OZCalendarPlugin }) {
 						setActiveStartDate(dayjs(activeStartDate).add(-12, 'month').toDate());
 					}
 				}}
-				formatMonthYear={(_locale, date) => dayjs(date).format('MMM YYYY')}
+				navigationLabel={({ date }) => (
+					<div className="oz-calendar-nav-label">
+						<span className="oz-calendar-month-year">{dayjs(date).format('MMM YYYY')}</span>
+						<span className="oz-calendar-quarter">Q{Math.ceil((date.getMonth() + 1) / 3)}</span>
+					</div>
+				)}
 			/>
 			<>
 				<div id="oz-calendar-divider"></div>

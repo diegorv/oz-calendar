@@ -1,6 +1,6 @@
 import OZCalendarPlugin from 'main';
 import { PluginSettingTab, App, Setting } from 'obsidian';
-import { FolderSuggest } from 'settings/suggestor';
+import { FileSuggest, FolderSuggest } from 'settings/suggestor';
 
 export type OpenFileBehaviourType = 'new-tab' | 'new-tab-group' | 'current-tab' | 'obsidian-default';
 export type SortingOption = 'name' | 'name-rev';
@@ -26,6 +26,15 @@ export interface OZCalendarPluginSettings {
 	newNoteCancelButtonReverse: boolean;
 	fileNameOverflowBehaviour: OverflowBehaviour;
 	showWeekNumbers: boolean;
+	weeklyNoteFolder: string;
+	weeklyNoteFormat: string;
+	weeklyNoteTemplate: string;
+	monthlyNoteFolder: string;
+	monthlyNoteFormat: string;
+	monthlyNoteTemplate: string;
+	quarterlyNoteFolder: string;
+	quarterlyNoteFormat: string;
+	quarterlyNoteTemplate: string;
 }
 
 export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
@@ -45,6 +54,15 @@ export const DEFAULT_SETTINGS: OZCalendarPluginSettings = {
 	newNoteCancelButtonReverse: false,
 	fileNameOverflowBehaviour: 'hide',
 	showWeekNumbers: false,
+	weeklyNoteFolder: '',
+	weeklyNoteFormat: 'YYYY/MM-MMM/YYYY-[W]ww',
+	weeklyNoteTemplate: '',
+	monthlyNoteFolder: '',
+	monthlyNoteFormat: 'YYYY/MM-MMM/MM-MMM',
+	monthlyNoteTemplate: '',
+	quarterlyNoteFolder: '',
+	quarterlyNoteFormat: 'YYYY/YYYY-[Q]Q',
+	quarterlyNoteTemplate: '',
 };
 
 export class OZCalendarPluginSettingsTab extends PluginSettingTab {
@@ -125,6 +143,144 @@ export class OZCalendarPluginSettingsTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 					this.plugin.calendarForceUpdate();
 				});
+			});
+
+		containerEl.createEl('h2', { text: 'Weekly Note Settings' });
+
+		containerEl.createEl('p', {
+			text: `
+			Configure settings for creating weekly notes when clicking on week numbers in the calendar.
+			Requires Templater plugin for template support.
+			`,
+			cls: 'setting-item-description',
+		});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Folder')
+			.setDesc('Select the folder where weekly notes should be saved')
+			.addSearch((cb) => {
+				new FolderSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Weekly')
+					.setValue(this.plugin.settings.weeklyNoteFolder)
+					.onChange((new_folder) => {
+						this.plugin.settings.weeklyNoteFolder = new_folder;
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Format')
+			.setDesc('Set the date format for weekly note file names. Use YYYY for year and [W]WW for ISO week number (e.g., YYYY-[W]WW → 2026-W03)')
+			.addText((text) => {
+				text.setValue(this.plugin.settings.weeklyNoteFormat).onChange((newValue) => {
+					this.plugin.settings.weeklyNoteFormat = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Weekly Note Template')
+			.setDesc('Path to the template file for weekly notes (without .md extension). Leave empty for no template.')
+			.addSearch((cb) => {
+				new FileSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Templates/Weekly')
+					.setValue(this.plugin.settings.weeklyNoteTemplate)
+					.onChange((newValue) => {
+						this.plugin.settings.weeklyNoteTemplate = newValue;
+						this.plugin.saveSettings();
+					});
+			});
+
+		containerEl.createEl('h2', { text: 'Monthly Note Settings' });
+
+		containerEl.createEl('p', {
+			text: `
+			Configure settings for creating monthly notes when clicking on the month name in the calendar navigation.
+			Requires Templater plugin for template support.
+			`,
+			cls: 'setting-item-description',
+		});
+
+		new Setting(containerEl)
+			.setName('Monthly Note Folder')
+			.setDesc('Select the folder where monthly notes should be saved')
+			.addSearch((cb) => {
+				new FolderSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Monthly')
+					.setValue(this.plugin.settings.monthlyNoteFolder)
+					.onChange((new_folder) => {
+						this.plugin.settings.monthlyNoteFolder = new_folder;
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Monthly Note Format')
+			.setDesc('Set the date format for monthly note file names. Use YYYY for year and MM for month (e.g., YYYY-MM → 2026-01)')
+			.addText((text) => {
+				text.setValue(this.plugin.settings.monthlyNoteFormat).onChange((newValue) => {
+					this.plugin.settings.monthlyNoteFormat = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Monthly Note Template')
+			.setDesc('Path to the template file for monthly notes (without .md extension). Leave empty for no template.')
+			.addSearch((cb) => {
+				new FileSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Templates/Monthly')
+					.setValue(this.plugin.settings.monthlyNoteTemplate)
+					.onChange((newValue) => {
+						this.plugin.settings.monthlyNoteTemplate = newValue;
+						this.plugin.saveSettings();
+					});
+			});
+
+		containerEl.createEl('h2', { text: 'Quarterly Note Settings' });
+
+		containerEl.createEl('p', {
+			text: `
+			Configure settings for creating quarterly notes when clicking on the quarter indicator (Q1-Q4) in the calendar navigation.
+			Requires Templater plugin for template support.
+			`,
+			cls: 'setting-item-description',
+		});
+
+		new Setting(containerEl)
+			.setName('Quarterly Note Folder')
+			.setDesc('Select the folder where quarterly notes should be saved')
+			.addSearch((cb) => {
+				new FolderSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Quarterly')
+					.setValue(this.plugin.settings.quarterlyNoteFolder)
+					.onChange((new_folder) => {
+						this.plugin.settings.quarterlyNoteFolder = new_folder;
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName('Quarterly Note Format')
+			.setDesc('Set the date format for quarterly note file names. Use YYYY for year and [Q]Q for quarter (e.g., YYYY-[Q]Q → 2026-Q1)')
+			.addText((text) => {
+				text.setValue(this.plugin.settings.quarterlyNoteFormat).onChange((newValue) => {
+					this.plugin.settings.quarterlyNoteFormat = newValue;
+					this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName('Quarterly Note Template')
+			.setDesc('Path to the template file for quarterly notes (without .md extension). Leave empty for no template.')
+			.addSearch((cb) => {
+				new FileSuggest(cb.inputEl);
+				cb.setPlaceholder('Example: Templates/Quarterly')
+					.setValue(this.plugin.settings.quarterlyNoteTemplate)
+					.onChange((newValue) => {
+						this.plugin.settings.quarterlyNoteTemplate = newValue;
+						this.plugin.saveSettings();
+					});
 			});
 
 		new Setting(containerEl)
